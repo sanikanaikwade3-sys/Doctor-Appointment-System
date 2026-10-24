@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 // CORS configuration
 // Replace this with your actual GitHub Pages origin
 app.use(cors({
-  origin: "https://YOUR-GITHUB-USERNAME.github.io"
+  origin: "https://sanikanaikwade3-sys.github.io"
 }));
 
 // Middleware
