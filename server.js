@@ -1,15 +1,25 @@
 
 const express = require("express");
+const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS configuration
+// Replace this with your actual GitHub Pages origin
+app.use(cors({
+  origin: "https://YOUR-GITHUB-USERNAME.github.io"
+}));
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend files directly from the project root
+// Serve frontend files from the project root
 app.use(express.static(__dirname));
 
+// Doctor information
 const doctors = [
   { id: "1", name: "Dr. Ananya Sharma", specialty: "Cardiology" },
   { id: "2", name: "Dr. Rahul Mehta", specialty: "Dermatology" },
@@ -17,12 +27,12 @@ const doctors = [
   { id: "4", name: "Dr. Arjun Patel", specialty: "Orthopedics" }
 ];
 
-// Serve index.html from the main project folder
+// Home route
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Search doctors by name or specialty
+// Get and search doctors
 app.get("/api/doctors", (req, res) => {
   const search = String(req.query.search || "").trim().toLowerCase();
 
@@ -37,7 +47,7 @@ app.get("/api/doctors", (req, res) => {
   });
 });
 
-// Validate appointment requests
+// Book an appointment
 app.post("/book-appointment", (req, res) => {
   const {
     patientName,
@@ -60,22 +70,27 @@ app.post("/book-appointment", (req, res) => {
     (doctor) => doctor.id === String(doctorId || "")
   );
 
+  // Validate patient name
   if (!/^[A-Za-z ]{2,80}$/.test(name)) {
     errors.push("Name must contain 2–80 letters and spaces only.");
   }
 
+  // Validate email
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patientEmail)) {
     errors.push("Enter a valid email address.");
   }
 
+  // Validate mobile number
   if (!/^[0-9]{10}$/.test(mobile)) {
     errors.push("Mobile number must contain exactly 10 digits.");
   }
 
+  // Validate doctor selection
   if (!selectedDoctor) {
     errors.push("Please select a valid doctor.");
   }
 
+  // Validate appointment date
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     errors.push("Please select a valid appointment date.");
   } else {
@@ -88,6 +103,7 @@ app.post("/book-appointment", (req, res) => {
       selectedDate.getUTCDate() === day;
 
     const now = new Date();
+
     const today = [
       now.getFullYear(),
       String(now.getMonth() + 1).padStart(2, "0"),
@@ -101,10 +117,12 @@ app.post("/book-appointment", (req, res) => {
     }
   }
 
+  // Validate reason for appointment
   if (visitReason.length < 5 || visitReason.length > 500) {
     errors.push("Reason must contain 5–500 characters.");
   }
 
+  // Return validation errors
   if (errors.length > 0) {
     return res.status(400).json({
       success: false,
@@ -113,6 +131,7 @@ app.post("/book-appointment", (req, res) => {
     });
   }
 
+  // Return successful appointment response
   return res.status(201).json({
     success: true,
     message: "Appointment request submitted successfully.",
@@ -125,6 +144,15 @@ app.post("/book-appointment", (req, res) => {
   });
 });
 
+// Handle unknown routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Requested route not found."
+  });
+});
+
+// Start server
 app.listen(PORT, () => {
   console.log(`MedQueue running on port ${PORT}`);
 });
