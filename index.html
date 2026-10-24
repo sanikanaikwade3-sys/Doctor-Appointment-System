@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedQueue | Find the Right Doctor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <a class="logo" href="/">
+      <span class="logo-symbol">✚</span>
+      <span>Med<span class="teal">Queue</span></span>
+    </a>
+
+    <nav>
+      <a href="#doctors">Doctors</a>
+      <a href="#specialties">Specialties</a>
+      <a href="#insurance">Insurance</a>
+      <a href="#portal">Portal</a>
+    </nav>
+
+    <button class="menu-button" id="menuButton" aria-label="Toggle navigation">☰</button>
+  </header>
+
+  <main class="hero">
+    <section class="intro">
+      <div class="tagline"><span>✳</span> Better care starts here</div>
+      <h1>Find the right doctor with confidence.</h1>
+      <p class="intro-text">
+        Discover trusted doctors, explore specialties, and request your
+        next appointment — all in one place.
+      </p>
+
+      <div class="intro-actions">
+        <button class="primary-button" id="exploreButton">
+          Find a doctor <span>→</span>
+        </button>
+        <div class="trust-note">
+          <span class="trust-icon">✓</span>
+          Care that puts you first
+        </div>
+      </div>
+
+      <div class="stats">
+        <div><strong>120+</strong><span>Care providers</span></div>
+        <div><strong>15+</strong><span>Specialties</span></div>
+        <div><strong>Easy</strong><span>Appointment requests</span></div>
+      </div>
+    </section>
+
+    <section class="search-area" id="doctors">
+      <div class="search-panel">
+        <div class="panel-heading">
+          <span>Search for a doctor</span>
+          <span class="dots">⠿</span>
+        </div>
+
+        <form id="searchForm">
+          <label class="search-input">
+            <span>⌕</span>
+            <input id="doctorSearch"
+              type="text"
+              placeholder="Search by specialty or doctor name">
+          </label>
+
+          <label class="search-input location-input">
+            <span>⌖</span>
+            <input id="locationSearch" type="text" placeholder="Select location">
+            <span>⌄</span>
+          </label>
+
+          <button class="search-button" type="submit" aria-label="Search">→</button>
+        </form>
+      </div>
+
+      <div class="matches-panel">
+        <div class="section-heading">
+          <h2>Top matches for you</h2>
+          <a href="#specialties" id="viewAll">View all</a>
+        </div>
+
+        <div id="doctorList" class="doctor-list">
+          <p class="loading">Loading doctors...</p>
+        </div>
+        <p class="search-message" id="searchMessage"></p>
+      </div>
+    </section>
+
+    <aside class="side-cards">
+      <article class="info-card" id="insurance">
+        <div class="card-icon">⬟</div>
+        <div class="card-content">
+          <h3>Insurance coverage</h3>
+          <p>Explore your coverage and learn about in-network care options.</p>
+          <div class="coverage-status"><span>✓</span> Check your coverage options</div>
+          <button class="outline-button" id="insuranceButton">
+            Check coverage <span>→</span>
+          </button>
+        </div>
+      </article>
+
+      <article class="info-card portal-card" id="portal">
+        <div class="card-icon portal-icon">♙</div>
+        <div class="card-content">
+          <h3>Patient portal</h3>
+          <p>Request an appointment and review your request details.</p>
+          <button class="outline-button" id="portalButton">
+            Book an appointment <span>→</span>
+          </button>
+        </div>
+      </article>
+    </aside>
+  </main>
+
+  <section class="specialty-section" id="specialties">
+    <div>
+      <p class="eyebrow">PERSONALIZED CARE</p>
+      <h2>Care for every stage of life</h2>
+      <p>Search for a doctor by specialty and find the care that suits your needs.</p>
+    </div>
+    <div class="specialty-tags">
+      <button data-search="Cardiology">Cardiology</button>
+      <button data-search="Dermatology">Dermatology</button>
+      <button data-search="Neurology">Neurology</button>
+      <button data-search="Orthopedics">Orthopedics</button>
+    </div>
+  </section>
+
+  <footer>
+    <a class="logo footer-logo" href="/">✚ Med<span class="teal">Queue</span></a>
+    <p>Helping you take the next step in your healthcare journey.</p>
+    <small>MedQueue demo application · Appointment requests are not medical advice.</small>
+  </footer>
+
+  <div class="modal" id="bookingModal" hidden>
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <section class="modal-card" role="dialog" aria-modal="true"
+      aria-labelledby="modalTitle">
+      <button class="modal-close" id="closeModal" aria-label="Close">×</button>
+      <p class="eyebrow">YOUR NEXT STEP</p>
+      <h2 id="modalTitle">Request an appointment</h2>
+      <p class="modal-subtitle">Enter your details to submit an appointment request.</p>
+
+      <div id="formMessage" class="form-message" hidden></div>
+
+      <form id="appointmentForm">
+        <label for="patientName">Full name</label>
+        <input id="patientName" name="patientName" type="text"
+          placeholder="Enter your full name" required maxlength="80">
+
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email"
+          placeholder="you@example.com" required maxlength="120">
+
+        <label for="phone">Mobile number</label>
+        <input id="phone" name="phone" type="tel"
+          placeholder="10-digit mobile number" required
+          inputmode="numeric" maxlength="10">
+
+        <label for="doctorId">Choose a doctor</label>
+        <select id="doctorId" name="doctorId" required>
+          <option value="">Select a doctor</option>
+        </select>
+
+        <label for="appointmentDate">Preferred appointment date</label>
+        <input id="appointmentDate" name="appointmentDate"
+          type="date" required>
+
+        <label for="reason">Reason for appointment</label>
+        <textarea id="reason" name="reason" rows="3"
+          placeholder="Briefly describe why you need an appointment"
+          required maxlength="500"></textarea>
+
+        <button class="primary-button submit-button" id="submitButton" type="submit">
+          Submit appointment request <span>→</span>
+        </button>
+      </form>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
