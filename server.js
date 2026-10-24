@@ -1,13 +1,14 @@
 
 const express = require("express");
-const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+
+// Serve frontend files directly from the project root
+app.use(express.static(__dirname));
 
 const doctors = [
   { id: "1", name: "Dr. Ananya Sharma", specialty: "Cardiology" },
@@ -16,10 +17,12 @@ const doctors = [
   { id: "4", name: "Dr. Arjun Patel", specialty: "Orthopedics" }
 ];
 
+// Serve index.html from the main project folder
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(__dirname + "/index.html");
 });
 
+// Search doctors by name or specialty
 app.get("/api/doctors", (req, res) => {
   const search = String(req.query.search || "").trim().toLowerCase();
 
@@ -34,6 +37,7 @@ app.get("/api/doctors", (req, res) => {
   });
 });
 
+// Validate appointment requests
 app.post("/book-appointment", (req, res) => {
   const {
     patientName,
@@ -122,5 +126,5 @@ app.post("/book-appointment", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`MedQueue running at http://localhost:${PORT}`);
+  console.log(`MedQueue running on port ${PORT}`);
 });
