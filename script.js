@@ -1,4 +1,6 @@
 
+const API_BASE_URL = "https://doctor-appointment-system-6s12.onrender.com";
+
 const doctorList = document.getElementById("doctorList");
 const searchForm = document.getElementById("searchForm");
 const doctorSearch = document.getElementById("doctorSearch");
@@ -24,6 +26,7 @@ const localToday = [
 
 appointmentDate.min = localToday;
 
+// Show form messages
 function showFormMessage(message, type) {
   formMessage.className = `form-message ${type}`;
   formMessage.replaceChildren();
@@ -45,6 +48,7 @@ function showFormMessage(message, type) {
   formMessage.hidden = false;
 }
 
+// Open booking modal
 function openBooking(doctorId = "") {
   bookingModal.hidden = false;
   document.body.classList.add("modal-open");
@@ -57,11 +61,13 @@ function openBooking(doctorId = "") {
   document.getElementById("patientName").focus();
 }
 
+// Close booking modal
 function closeBooking() {
   bookingModal.hidden = true;
   document.body.classList.remove("modal-open");
 }
 
+// Load and search doctors from Render
 async function loadDoctors(search = "", location = "") {
   doctorList.replaceChildren();
 
@@ -72,7 +78,11 @@ async function loadDoctors(search = "", location = "") {
 
   try {
     const params = new URLSearchParams({ search, location });
-    const response = await fetch(`/api/doctors?${params}`);
+
+    const response = await fetch(
+      `${API_BASE_URL.replace(/\/+$/, "")}/api/doctors?${params}`
+    );
+
     const data = await response.json();
 
     if (!response.ok || !data.success) {
@@ -101,7 +111,7 @@ async function loadDoctors(search = "", location = "") {
       avatar.className = "doctor-avatar";
       avatar.textContent = doctor.name
         .split(" ")
-        .filter((word) => word.startsWith("Dr.") === false)
+        .filter((word) => word !== "Dr.")
         .map((word) => word[0])
         .slice(0, 2)
         .join("")
@@ -118,7 +128,8 @@ async function loadDoctors(search = "", location = "") {
 
       const rating = document.createElement("div");
       rating.className = "rating";
-      rating.textContent = `★ ${(4.8 - index * 0.1).toFixed(1)} · Demo rating`;
+      rating.textContent =
+        `★ ${(4.8 - index * 0.1).toFixed(1)} · Demo rating`;
 
       info.append(name, specialty, rating);
 
@@ -149,11 +160,14 @@ async function loadDoctors(search = "", location = "") {
       : "No doctors found. Try another name or specialty.";
 
   } catch (error) {
+    console.error("Doctor loading error:", error);
     doctorList.replaceChildren();
-    searchMessage.textContent = "Could not load doctors. Please try again.";
+    searchMessage.textContent =
+      "Could not load doctors. Check the backend URL and try again.";
   }
 }
 
+// Search form
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -163,6 +177,7 @@ searchForm.addEventListener("submit", (event) => {
   );
 });
 
+// View all doctors
 document.getElementById("viewAll").addEventListener("click", (event) => {
   event.preventDefault();
   doctorSearch.value = "";
@@ -170,6 +185,7 @@ document.getElementById("viewAll").addEventListener("click", (event) => {
   loadDoctors();
 });
 
+// Specialty search buttons
 document.querySelectorAll("[data-search]").forEach((button) => {
   button.addEventListener("click", () => {
     doctorSearch.value = button.dataset.search;
@@ -182,6 +198,7 @@ document.querySelectorAll("[data-search]").forEach((button) => {
   });
 });
 
+// Explore doctors
 document.getElementById("exploreButton").addEventListener("click", () => {
   document.getElementById("doctors").scrollIntoView({
     behavior: "smooth",
@@ -191,14 +208,19 @@ document.getElementById("exploreButton").addEventListener("click", () => {
   doctorSearch.focus();
 });
 
+// Open booking form
 document.getElementById("portalButton").addEventListener("click", () => {
   openBooking();
 });
 
+// Insurance information
 document.getElementById("insuranceButton").addEventListener("click", () => {
-  alert("Insurance information demo: please contact your insurance provider to verify coverage.");
+  alert(
+    "Insurance information demo: please contact your insurance provider to verify coverage."
+  );
 });
 
+// Close booking modal
 document.getElementById("closeModal").addEventListener("click", closeBooking);
 document.getElementById("modalBackdrop").addEventListener("click", closeBooking);
 
@@ -208,6 +230,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+// Mobile navigation
 document.getElementById("menuButton").addEventListener("click", () => {
   document.querySelector(".navbar nav").classList.toggle("open");
 });
@@ -218,10 +241,12 @@ document.querySelectorAll(".navbar nav a").forEach((link) => {
   });
 });
 
+// Phone number validation
 phoneInput.addEventListener("input", () => {
   phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
 });
 
+// Submit appointment request to Render
 appointmentForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   formMessage.hidden = true;
@@ -229,8 +254,11 @@ appointmentForm.addEventListener("submit", async (event) => {
   const formData = new FormData(appointmentForm);
   const details = Object.fromEntries(formData.entries());
 
-  if (!/^[0-9]{10}$/.test(details.phone)) {
-    showFormMessage("Mobile number must contain exactly 10 digits.", "error");
+  if (!/^[0-9]{10}$/.test(details.phone || "")) {
+    showFormMessage(
+      "Mobile number must contain exactly 10 digits.",
+      "error"
+    );
     phoneInput.focus();
     return;
   }
@@ -239,18 +267,33 @@ appointmentForm.addEventListener("submit", async (event) => {
   submitButton.textContent = "Submitting request...";
 
   try {
-    const response = await fetch("/book-appointment", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(details)
-    });
+    const response = await fetch(
+      `${API_BASE_URL.replace(/\/+$/, "")}/book-appointment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(details)
+      }
+    );
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(
+        `The backend returned an unexpected response (HTTP ${response.status}). Check your Render URL and backend routes.`
+      );
+    }
 
     if (!response.ok) {
-      showFormMessage(data.errors || [data.message || "Please check your details."], "error");
+      showFormMessage(
+        data.errors || [data.message || "Please check your details."],
+        "error"
+      );
       return;
     }
 
@@ -263,11 +306,20 @@ appointmentForm.addEventListener("submit", async (event) => {
     appointmentDate.min = localToday;
 
   } catch (error) {
-    showFormMessage("Unable to contact the server. Please try again.", "error");
+    console.error("Appointment submission error:", error);
+
+    showFormMessage(
+      error.message ||
+        "Unable to contact the server. Please check your connection.",
+      "error"
+    );
+
   } finally {
     submitButton.disabled = false;
-    submitButton.innerHTML = 'Submit appointment request <span>→</span>';
+    submitButton.innerHTML =
+      'Submit appointment request <span>→</span>';
   }
 });
 
+// Load doctors when the page opens
 loadDoctors();
